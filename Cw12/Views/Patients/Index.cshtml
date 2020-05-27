@@ -1,0 +1,45 @@
+﻿@model IEnumerable<Cw12.Models.Patient>
+
+<style>
+    table, tr, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    td, button {
+        width: 200px;
+    }
+</style>
+
+<h1>Lista doktorów</h1>
+
+<p>
+    <table>
+        @foreach (var patient in Model)
+        {
+            <tr>
+                <td>
+                    @patient.FirstName
+                </td>
+                <td>
+                    @patient.LastName
+                </td>
+                <td>
+                    @patient.IdPatient
+                </td>
+                <td>
+                    @patient.Birthdate
+                </td>
+                <td>
+                    @Html.ActionLink("Pokaż detale", "GetPatientDetails", patient)
+                </td>
+                <td>
+                    @Html.ActionLink("Usuń pacjenta", "DeletePatient", patient)
+                </td>
+            </tr>
+
+        }
+    </table>
+</p>
+
+@Html.ActionLink("Dodaj pacjenta", "AddPatient")

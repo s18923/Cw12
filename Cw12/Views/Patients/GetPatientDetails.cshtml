@@ -1,0 +1,16 @@
+﻿@model Cw12.Models.Patient
+@{
+    ViewData["Title"] = "GetPatientDetails";
+}
+
+<h1>Szczegółowe informacje dotyczące pacjenta o Id @Model.IdPatient</h1>
+<div>Imię: @Model.FirstName</div>
+<div>Nazwisko: @Model.LastName</div>
+<div>Data Urodzenia: @Model.Birthdate</div>
+<div>Lista recept:  @foreach (var prescription in Model.Prescription)
+                        {
+                            <div>Numer recepty: @prescription.IdPrescription</div>                            
+                        }
+</div>
+
+
