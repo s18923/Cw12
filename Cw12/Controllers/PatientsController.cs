@@ -37,10 +37,11 @@ namespace Cw12.Controllers
         {           
             return View();
         }
+        
         public IActionResult DeletePatient(Patient patient)
         {
             service.DeletePatient(patient);
-            return View("Index");
+            return View();
         }
     }
 }

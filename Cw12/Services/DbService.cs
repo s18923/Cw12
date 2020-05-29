@@ -18,12 +18,58 @@ namespace Cw12.Services
 
         public void DeletePatient(Patient patient)
         {
-            var result = context.Patient.FirstOrDefault(e => e.IdPatient == patient.IdPatient);
-            //var result = context.Patient.Include(x => x.Prescription).FirstOrDefault(e => e.IdPatient == patient.IdPatient);
-            //var pre = context.Prescription.Where(s => s.IdPatient == result.IdPatient).ToList();      
-            context.Patient.Remove(result);
-            ////context.Prescription.Remove(pre);
+            using var tran = context.Database.BeginTransaction();
+            var read = from p in context.Patient
+                       join pre in context.Prescription on p.IdPatient equals pre.IdPatient into gpre
+                       from pprree in gpre.DefaultIfEmpty()
+                       join pm in context.PrescriptionMedicament on pprree.IdPrescription equals pm.IdPrescription into gpm
+                       from ppmm in gpm.DefaultIfEmpty()
+                       where p.IdPatient == patient.IdPatient
+                       select new { p.IdPatient, pprree.IdPrescription, ppmm.IdMedicament };
+
+            var result = read.ToList();
+
+            var firstDelete = read.Where(x => x.IdMedicament != 0 && x.IdPrescription != 0).Select(x => new { x.IdPrescription, x.IdMedicament });
+            foreach (var item in firstDelete)
+            {
+                var e = new PrescriptionMedicament()
+                {
+                    IdPrescription = item.IdPrescription,
+                    IdMedicament = item.IdMedicament
+                };
+                context.PrescriptionMedicament.Attach(e);
+                context.PrescriptionMedicament.Remove(e);
+            }
+
             context.SaveChanges();
+
+            var secondDelete = read.Where(x => x.IdPrescription != 0).Select(x => new { x.IdPrescription }).Distinct();
+            foreach (var item in secondDelete)
+            {
+                var e = new Prescription()
+                {
+                    IdPrescription = item.IdPrescription
+                };
+                context.Prescription.Attach(e);
+                context.Prescription.Remove(e);
+            }
+
+            context.SaveChanges();
+
+            var thirdDelete = read.Where(x => x.IdPatient == patient.IdPatient).Select(x => new { x.IdPatient }).Distinct();
+            foreach (var item in thirdDelete)
+            {
+                var e = new Patient()
+                {
+                    IdPatient = item.IdPatient
+                };
+                context.Patient.Attach(e);
+                context.Patient.Remove(e);
+            }
+
+            context.SaveChanges();
+
+            tran.Commit();
         }
 
         public void AddPatient(Patient patient)
